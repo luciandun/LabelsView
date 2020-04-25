@@ -2,6 +2,8 @@ LabelsView
 ======
 标签列表控件的使用介绍。
 
+原项目地址：https://github.com/donkingliang/LabelsView
+
 **1、引入依赖**
 在Project的build.gradle在添加以下代码
 ```
