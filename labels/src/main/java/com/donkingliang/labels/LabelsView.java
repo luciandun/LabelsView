@@ -1,16 +1,20 @@
 package com.donkingliang.labels;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -18,7 +22,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LabelsView extends ViewGroup implements View.OnClickListener, View.OnLongClickListener {
+public class LabelsView extends ViewGroup implements View.OnClickListener,
+        View.OnLongClickListener, View.OnTouchListener {
 
     private Context mContext;
 
@@ -39,6 +44,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener, View.
     private int mMinSelect;
     private int mMaxLines;
     private boolean isSingleLine = false;
+    private int mClearIcon; //删除图标
 
     private boolean isIndicator; //只能看，不能手动改变选中状态。
 
@@ -166,6 +172,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener, View.
             }
 
             isSingleLine = mTypedArray.getBoolean(R.styleable.labels_view_singleLine, false);
+            mClearIcon = mTypedArray.getResourceId(R.styleable.labels_view_labelCancelIcon, 0);
 
             mTypedArray.recycle();
         }
@@ -522,6 +529,33 @@ public class LabelsView extends ViewGroup implements View.OnClickListener, View.
         }
     }
 
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP){
+            if (view instanceof TextView){
+                TextView label = (TextView) view;
+                int position = indexOfChild(label);
+                int x = (int) motionEvent.getX();
+                int y = (int) motionEvent.getY();
+                Log.i("LabelsView", "action up position is "+position);
+                Rect rightRect = label.getCompoundDrawables()[2].getBounds();
+                int rectHeight = rightRect.height();
+                int rectHeightStart = (label.getHeight() - rectHeight) / 2;
+                boolean isInRectWidth = x >= (label.getWidth() - label.getTotalPaddingRight()) &&
+                        x <= label.getWidth() - label.getPaddingRight();
+                boolean isInRectHeight = y >= rectHeightStart && y <= rectHeightStart + rectHeight;
+                if (isInRectHeight && isInRectWidth) {
+                    if (position >= 0 && position <= mLabels.size() - 1){
+                        mLabels.remove(position);
+                        removeView(label);
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * 获取标签列表
      *
@@ -531,9 +565,15 @@ public class LabelsView extends ViewGroup implements View.OnClickListener, View.
         return (List<T>) mLabels;
     }
 
-    private <T> void addLabel(T data, int position, LabelTextProvider<T> provider) {
+    @SuppressLint("ClickableViewAccessibility")
+    private <T> void addLabel(T data, final int position, final LabelTextProvider<T> provider) {
         final TextView label = new TextView(mContext);
         label.setPadding(mTextPaddingLeft, mTextPaddingTop, mTextPaddingRight, mTextPaddingBottom);
+        if (mClearIcon != 0) {
+            label.setCompoundDrawablesWithIntrinsicBounds(0, 0, mClearIcon, 0);
+            label.setCompoundDrawablePadding(dp2px(5));
+            label.setOnTouchListener(this);
+        }
         label.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTextSize);
         label.setGravity(mLabelGravity);
         label.setTextColor(mTextColor);
@@ -548,6 +588,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener, View.
         addView(label, mLabelWidth, mLabelHeight);
         label.setText(provider.getLabelText(label, position, data));
     }
+
 
     /**
      * 确保标签是否能响应事件，如果标签可选或者标签设置了点击事件监听，则响应事件。
