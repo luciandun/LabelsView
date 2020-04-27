@@ -44,7 +44,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
     private int mMinSelect;
     private int mMaxLines;
     private boolean isSingleLine = false;
-    private int mClearIcon; //删除图标
+    private int mDelIcon; //删除图标
 
     private boolean isIndicator; //只能看，不能手动改变选中状态。
 
@@ -172,7 +172,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
             }
 
             isSingleLine = mTypedArray.getBoolean(R.styleable.labels_view_singleLine, false);
-            mClearIcon = mTypedArray.getResourceId(R.styleable.labels_view_labelCancelIcon, 0);
+            mDelIcon = mTypedArray.getResourceId(R.styleable.labels_view_labelDelIcon, 0);
 
             mTypedArray.recycle();
         }
@@ -569,8 +569,8 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
     private <T> void addLabel(T data, final int position, final LabelTextProvider<T> provider) {
         final TextView label = new TextView(mContext);
         label.setPadding(mTextPaddingLeft, mTextPaddingTop, mTextPaddingRight, mTextPaddingBottom);
-        if (mClearIcon != 0) {
-            label.setCompoundDrawablesWithIntrinsicBounds(0, 0, mClearIcon, 0);
+        if (mDelIcon != 0) {
+            label.setCompoundDrawablesWithIntrinsicBounds(0, 0, mDelIcon, 0);
             label.setCompoundDrawablePadding(dp2px(5));
             label.setOnTouchListener(this);
         }
