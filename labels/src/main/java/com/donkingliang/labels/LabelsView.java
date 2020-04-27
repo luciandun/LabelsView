@@ -64,6 +64,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
     private OnLabelLongClickListener mLabelLongClickListener;
     private OnLabelSelectChangeListener mLabelSelectChangeListener;
     private OnSelectChangeIntercept mOnSelectChangeIntercept;
+    private OnDeleteListener mOnDeleteListener;
 
     /**
      * Label的选择类型
@@ -531,13 +532,13 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        if (motionEvent.getAction() == MotionEvent.ACTION_UP){
-            if (view instanceof TextView){
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            if (view instanceof TextView) {
                 TextView label = (TextView) view;
                 int position = indexOfChild(label);
                 int x = (int) motionEvent.getX();
                 int y = (int) motionEvent.getY();
-                Log.i("LabelsView", "action up position is "+position);
+                Log.i("LabelsView", "action up position is " + position);
                 Rect rightRect = label.getCompoundDrawables()[2].getBounds();
                 int rectHeight = rightRect.height();
                 int rectHeightStart = (label.getHeight() - rectHeight) / 2;
@@ -545,9 +546,12 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
                         x <= label.getWidth() - label.getPaddingRight();
                 boolean isInRectHeight = y >= rectHeightStart && y <= rectHeightStart + rectHeight;
                 if (isInRectHeight && isInRectWidth) {
-                    if (position >= 0 && position <= mLabels.size() - 1){
-                        mLabels.remove(position);
+                    if (position >= 0 && position <= mLabels.size() - 1) {
+                        Object obj = mLabels.remove(position);
                         removeView(label);
+                        if (mOnDeleteListener != null) {
+                            mOnDeleteListener.onLabelDelete(obj, position);
+                        }
                     }
                 }
             }
@@ -1142,6 +1146,15 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
     }
 
     /**
+     * 设置删除label回调
+     *
+     * @param deleteListener
+     */
+    public void setOnDelectListener(OnDeleteListener deleteListener) {
+        mOnDeleteListener = deleteListener;
+    }
+
+    /**
      * sp转px
      */
     private int sp2px(float spVal) {
@@ -1186,6 +1199,13 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
          * @param position 标签位置
          */
         void onLabelSelectChange(TextView label, Object data, boolean isSelect, int position);
+    }
+
+    /**
+     * 删除某个标签
+     */
+    public interface OnDeleteListener {
+        void onLabelDelete(Object data, int position);
     }
 
     /**
