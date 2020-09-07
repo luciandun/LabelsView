@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="labels_view">
+    <declare-styleable name="LabelsView">
         <attr name="selectType" format="enum">
             <enum name="NONE" value="1" />
             <enum name="SINGLE" value="2" />
@@ -71,5 +71,6 @@
         <attr name="labelBackground" format="reference|color" />
         <attr name="singleLine" format="boolean" />
         <attr name="labelDelIcon" format="reference"/>
+        <attr name="goneIfEmpty" format="boolean"/>
     </declare-styleable>
 </resources>

@@ -45,6 +45,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
     private int mMaxLines;
     private boolean isSingleLine = false;
     private int mDelIcon; //删除图标
+    private boolean goneIfEmpty; //如果没有数据则隐藏
 
     private boolean isIndicator; //只能看，不能手动改变选中状态。
 
@@ -122,58 +123,59 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
 
     private void getAttrs(Context context, AttributeSet attrs) {
         if (attrs != null) {
-            TypedArray mTypedArray = context.obtainStyledAttributes(attrs, R.styleable.labels_view);
-            int type = mTypedArray.getInt(R.styleable.labels_view_selectType, 1);
+            TypedArray mTypedArray = context.obtainStyledAttributes(attrs, R.styleable.LabelsView);
+            int type = mTypedArray.getInt(R.styleable.LabelsView_selectType, 1);
             mSelectType = SelectType.get(type);
 
-            mMaxSelect = mTypedArray.getInteger(R.styleable.labels_view_maxSelect, 0);
-            mMinSelect = mTypedArray.getInteger(R.styleable.labels_view_minSelect, 0);
-            mMaxLines = mTypedArray.getInteger(R.styleable.labels_view_maxLines, 0);
-            isIndicator = mTypedArray.getBoolean(R.styleable.labels_view_isIndicator, false);
+            mMaxSelect = mTypedArray.getInteger(R.styleable.LabelsView_maxSelect, 0);
+            mMinSelect = mTypedArray.getInteger(R.styleable.LabelsView_minSelect, 0);
+            mMaxLines = mTypedArray.getInteger(R.styleable.LabelsView_maxLines, 0);
+            isIndicator = mTypedArray.getBoolean(R.styleable.LabelsView_isIndicator, false);
 
-            mLabelGravity = mTypedArray.getInt(R.styleable.labels_view_labelGravity, mLabelGravity);
-            mLabelWidth = mTypedArray.getLayoutDimension(R.styleable.labels_view_labelTextWidth, mLabelWidth);
-            mLabelHeight = mTypedArray.getLayoutDimension(R.styleable.labels_view_labelTextHeight, mLabelHeight);
+            mLabelGravity = mTypedArray.getInt(R.styleable.LabelsView_labelGravity, mLabelGravity);
+            mLabelWidth = mTypedArray.getLayoutDimension(R.styleable.LabelsView_labelTextWidth, mLabelWidth);
+            mLabelHeight = mTypedArray.getLayoutDimension(R.styleable.LabelsView_labelTextHeight, mLabelHeight);
 
-            if (mTypedArray.hasValue(R.styleable.labels_view_labelTextColor)) {
-                mTextColor = mTypedArray.getColorStateList(R.styleable.labels_view_labelTextColor);
+            if (mTypedArray.hasValue(R.styleable.LabelsView_labelTextColor)) {
+                mTextColor = mTypedArray.getColorStateList(R.styleable.LabelsView_labelTextColor);
             } else {
                 mTextColor = ColorStateList.valueOf(0xFF000000);
             }
 
-            mTextSize = mTypedArray.getDimension(R.styleable.labels_view_labelTextSize,
+            mTextSize = mTypedArray.getDimension(R.styleable.LabelsView_labelTextSize,
                     sp2px(14));
-            if (mTypedArray.hasValue(R.styleable.labels_view_labelTextPadding)) {
+            if (mTypedArray.hasValue(R.styleable.LabelsView_labelTextPadding)) {
                 int textPadding = mTypedArray.getDimensionPixelOffset(
-                        R.styleable.labels_view_labelTextPadding, 0);
+                        R.styleable.LabelsView_labelTextPadding, 0);
                 mTextPaddingLeft = mTextPaddingTop = mTextPaddingRight = mTextPaddingBottom = textPadding;
             } else {
                 mTextPaddingLeft = mTypedArray.getDimensionPixelOffset(
-                        R.styleable.labels_view_labelTextPaddingLeft, dp2px(10));
+                        R.styleable.LabelsView_labelTextPaddingLeft, dp2px(10));
                 mTextPaddingTop = mTypedArray.getDimensionPixelOffset(
-                        R.styleable.labels_view_labelTextPaddingTop, dp2px(5));
+                        R.styleable.LabelsView_labelTextPaddingTop, dp2px(5));
                 mTextPaddingRight = mTypedArray.getDimensionPixelOffset(
-                        R.styleable.labels_view_labelTextPaddingRight, dp2px(10));
+                        R.styleable.LabelsView_labelTextPaddingRight, dp2px(10));
                 mTextPaddingBottom = mTypedArray.getDimensionPixelOffset(
-                        R.styleable.labels_view_labelTextPaddingBottom, dp2px(5));
+                        R.styleable.LabelsView_labelTextPaddingBottom, dp2px(5));
             }
 
-            mLineMargin = mTypedArray.getDimensionPixelOffset(R.styleable.labels_view_lineMargin, dp2px(5));
-            mWordMargin = mTypedArray.getDimensionPixelOffset(R.styleable.labels_view_wordMargin, dp2px(5));
-            if (mTypedArray.hasValue(R.styleable.labels_view_labelBackground)) {
-                int labelBgResId = mTypedArray.getResourceId(R.styleable.labels_view_labelBackground, 0);
+            mLineMargin = mTypedArray.getDimensionPixelOffset(R.styleable.LabelsView_lineMargin, dp2px(5));
+            mWordMargin = mTypedArray.getDimensionPixelOffset(R.styleable.LabelsView_wordMargin, dp2px(5));
+            if (mTypedArray.hasValue(R.styleable.LabelsView_labelBackground)) {
+                int labelBgResId = mTypedArray.getResourceId(R.styleable.LabelsView_labelBackground, 0);
                 if (labelBgResId != 0) {
                     mLabelBg = getResources().getDrawable(labelBgResId);
                 } else {
-                    int labelBgColor = mTypedArray.getColor(R.styleable.labels_view_labelBackground, Color.TRANSPARENT);
+                    int labelBgColor = mTypedArray.getColor(R.styleable.LabelsView_labelBackground, Color.TRANSPARENT);
                     mLabelBg = new ColorDrawable(labelBgColor);
                 }
             } else {
                 mLabelBg = getResources().getDrawable(R.drawable.default_label_bg);
             }
 
-            isSingleLine = mTypedArray.getBoolean(R.styleable.labels_view_singleLine, false);
-            mDelIcon = mTypedArray.getResourceId(R.styleable.labels_view_labelDelIcon, 0);
+            isSingleLine = mTypedArray.getBoolean(R.styleable.LabelsView_singleLine, false);
+            mDelIcon = mTypedArray.getResourceId(R.styleable.LabelsView_labelDelIcon, 0);
+            goneIfEmpty = mTypedArray.getBoolean(R.styleable.LabelsView_goneIfEmpty, false);
 
             mTypedArray.recycle();
         }
@@ -192,9 +194,9 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
             label.add("Label 4");
             label.add("Label 5");
             label.add("Label 6");
-            label.add("Label 7");
             setLabels(label);
         }
+        if (goneIfEmpty && mLabels.isEmpty()) setVisibility(GONE);
     }
 
     @Override
@@ -528,6 +530,12 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
         if (mSelectType == SelectType.SINGLE_IRREVOCABLY) {
             setSelects(0);
         }
+
+        if (mLabels.isEmpty()) {
+            if (goneIfEmpty) setVisibility(GONE);
+        } else {
+            setVisibility(VISIBLE);
+        }
     }
 
     @Override
@@ -549,6 +557,9 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
                     if (position >= 0 && position <= mLabels.size() - 1) {
                         Object obj = mLabels.remove(position);
                         removeView(label);
+                        if (goneIfEmpty && mLabels.isEmpty()) {
+                            setVisibility(GONE);
+                        }
                         if (mOnDeleteListener != null) {
                             mOnDeleteListener.onLabelDelete(obj, position);
                         }
@@ -612,7 +623,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
             if (!isIndicator) {
                 if (mSelectType != SelectType.NONE) {
                     if (label.isSelected()) {
-                        boolean irrevocable = mSelectType == SelectType.MULTI && mCompulsorys.contains((Integer) label.getTag(KEY_POSITION));
+                        boolean irrevocable = mSelectType == SelectType.MULTI && mCompulsorys.contains(label.getTag(KEY_POSITION));
                         irrevocable = irrevocable || (mSelectType == SelectType.MULTI && mSelectLabels.size() <= mMinSelect);
                         irrevocable = irrevocable || mSelectType == SelectType.SINGLE_IRREVOCABLY;
                         if (!irrevocable && !selectChangeIntercept(label)) {
@@ -658,7 +669,7 @@ public class LabelsView extends ViewGroup implements View.OnClickListener,
             if (isSelect) {
                 mSelectLabels.add((Integer) label.getTag(KEY_POSITION));
             } else {
-                mSelectLabels.remove((Integer) label.getTag(KEY_POSITION));
+                mSelectLabels.remove(label.getTag(KEY_POSITION));
             }
             if (mLabelSelectChangeListener != null) {
                 mLabelSelectChangeListener.onLabelSelectChange(label, label.getTag(KEY_DATA),
